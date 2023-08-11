@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- HTMX -->
+    <script
+      src="https://unpkg.com/htmx.org@1.9.4"
+      integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Websockets Extension  -->
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    <title>Websockets-HTMX-GO</title>
+  </head>
+
+  <body>
+    <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
+      <form id="form" ws-send>
+        <input name="chat_message" />
+      </form>
+    </div>
+  </body>
+</html>
