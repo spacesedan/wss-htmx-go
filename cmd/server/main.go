@@ -10,9 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spacesedan/wss-htmx-go/internal/rest"
-
 	chi "github.com/go-chi/chi/v5"
+	"github.com/spacesedan/wss-htmx-go/internal/handlers"
 	"golang.org/x/exp/slog"
 )
 
@@ -82,8 +81,8 @@ type ServerConfig struct {
 func newServer(conf ServerConfig) (*http.Server, error) {
 	r := chi.NewRouter()
 
-	rest.NewWssHandler().Register(r)
-	rest.NewViewHandler().Register(r)
+	handlers.NewWssHandler().Register(r)
+	handlers.NewViewHandler().Register(r)
 
 	return &http.Server{
 		Handler: r,
