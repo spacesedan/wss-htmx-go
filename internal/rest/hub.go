@@ -1,9 +1,12 @@
 package rest
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Hub struct {
 	clients    map[*Client]bool
+	wsChan     chan WsPayload
 	broadcast  chan []byte
 	register   chan *Client
 	unregister chan *Client
@@ -12,6 +15,7 @@ type Hub struct {
 func newHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
+		wsChan:     make(chan WsPayload),
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),

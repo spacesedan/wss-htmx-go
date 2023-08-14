@@ -28,10 +28,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-type key int
-
-const keyClientID key = iota
-
 type WssHandler struct {
 	hub *Hub
 }
@@ -48,7 +44,21 @@ func (h *WssHandler) Register(m *chi.Mux) {
 	m.HandleFunc("/ws", h.Serve)
 }
 
+type WsJsonResponse struct {
+	Action      string `json:"action"`
+	Message     string `json:"message"`
+	MessageType string `json:"message_type"`
+}
+
+type WsPayload struct {
+	Action  string `json:"action"`
+	ID      string `json:"id"`
+	Message string `json:"message"`
+	Conn    Client `json:"_-"`
+}
+
 func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
+	log.Println("Connected to socket")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print(err)
@@ -60,15 +70,23 @@ func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var response WsJsonResponse
+	response.Message = `<div id="poop" hx-swap-oob="true"><em><small>Connected to server</small></em></div>`
+
+	err = conn.WriteJSON(response)
+	if err != nil {
+		log.Println(err)
+	}
+
 	client := &Client{
 		hub:  h.hub,
-		conn: conn,
+		conn: WsConnection{Conn: conn},
 		send: make(chan Message),
 		id:   cID.String(),
 	}
 
 	client.hub.register <- client
 
-	go client.writePump()
+	go client.ListenForWs()
 	go client.readPump()
 }
