@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.4"
+    integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
+    crossorigin="anonymous"></script>
+  <!-- Websockets Extension  -->
+  <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+  <!-- Tailwind Css -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <title></title>
+</head>
+
+<body>
+  <div class="container p-12">
+    <div class="bg-green-500 h-32">
+      <form hx-post="/username" class="flex items-end gap-3 px-2">
+        <div class="flex flex-col">
+          <label for="username">enter username</label>
+          <input type="text" id="username" name="username" class="border-black
+          border-2">
+        </div>
+        <button type="submit" class="py-0.5">Send</button>
+      </form>
+    </div>
+  </div>
+  </div>
+
+</body>
+
+</html>

@@ -24,11 +24,26 @@ func NewViewHandler() *ViewHandler {
 }
 
 func (v *ViewHandler) Register(r *chi.Mux) {
-	r.Get("/", v.Index)
+	r.Route("/", func(r chi.Router) {
+		r.Use(CheckUsernameCookie)
+		r.Get("/", v.Index)
+	})
+	r.Get("/login", v.LoginPage)
 }
 
 func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
-	err := v.renderPage(w, "index.jet", nil)
+	username, _ := r.Cookie("username")
+	vars := make(jet.VarMap)
+	vars.Set("user", username.Value)
+	err := v.renderPage(w, "index.jet", vars)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func (v *ViewHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	err := v.renderPage(w, "login.jet", nil)
 	if err != nil {
 		log.Println(err)
 		return

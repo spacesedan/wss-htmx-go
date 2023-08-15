@@ -17,14 +17,13 @@
 </head>
 
 <body>
-
-  <div id="poop"></div>
+  {{ user }}
   <div id="chat_room" class="text-3xl"></div>
   <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-    <form id="form" ws-send>
-      <input name="chat_message" class="border-2" />
-    </form>
-
+    <!--   <form id="form" ws-send> -->
+    <!--     <input name="chat_message" class="border-2" /> -->
+    <!--   </form> -->
+    <!--  -->
     <div id="status"></div>
   </div>
 
