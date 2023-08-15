@@ -59,7 +59,7 @@ func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response WsJsonResponse
-	response.Message = `<div id="status" hx-swap-oob="true">Welcome to the startup...</div>`
+	response.Message = `<span id="status" hx-swap-oob="true"> Welcome to the startup...</span>`
 	err = ws.WriteMessage(websocket.TextMessage, []byte(response.Message))
 	if err != nil {
 		log.Println(err)
