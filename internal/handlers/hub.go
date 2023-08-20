@@ -35,9 +35,11 @@ func (h *Hub) ListenToWsChannel() {
 	var response WsJsonResponse
 	for {
 		e := <-h.wsChan
-		switch e.Action {
+		switch e.Headers["action"] {
 		case "broadcast":
 		case "alert":
+		case "message":
+			fmt.Println("Got a new message")
 		case "list_users":
 		case "connect":
 		case "left":
@@ -57,7 +59,9 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 	var payload WsPayload
 
 	for {
+
 		err := conn.ReadJSON(&payload)
+		fmt.Println(payload)
 		if err != nil {
 			// Do nothing...
 		} else {

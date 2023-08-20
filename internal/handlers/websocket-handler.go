@@ -43,11 +43,13 @@ type WsJsonResponse struct {
 	ConnectedUser []string     `json:"-"`
 }
 
+// WsPayload contains the information comming from the websocket connection
 type WsPayload struct {
-	Action  string       `json:"action"`
-	ID      string       `json:"id"`
-	Message string       `json:"message"`
-	Conn    WsConnection `json:"-"`
+	Headers map[string]string `json:"HEADERS"`
+	Action  string            `json:"action"`
+	ID      string            `json:"id"`
+	Message string            `json:"message"`
+	Conn    WsConnection      `json:"-"`
 }
 
 func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {

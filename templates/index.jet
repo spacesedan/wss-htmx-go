@@ -21,12 +21,11 @@
 
     <div id="chat_room" class="text-3xl"></div>
     <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-      <!--   <form id="form" ws-send> -->
-      <!--     <input name="chat_message" class="border-2" /> -->
-      <!--   </form> -->
-      <!--  -->
+      <form id="form" ws-send hx-headers='{"action" : "message"}'>
+        <input name="message" class="border-2" />
+      </form>
       <div class="flex">
-        <p> {{ user }} <span id="status"></span></p>
+        <p> {{ user }}, <span id="status"></span></p>
       </div>
     </div>
 
