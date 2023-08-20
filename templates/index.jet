@@ -21,6 +21,7 @@
 
     <div id="chat_room" class="text-3xl"></div>
     <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
+      <!-- added hx-headers attribute to send a cutom header to the ws server -->
       <form id="form" ws-send hx-headers='{"action" : "message"}'>
         <input name="message" class="border-2" />
       </form>

@@ -45,6 +45,7 @@ type WsJsonResponse struct {
 
 // WsPayload contains the information comming from the websocket connection
 type WsPayload struct {
+	// HEADERS is injected to the message by htmx
 	Headers map[string]string `json:"HEADERS"`
 	Action  string            `json:"action"`
 	ID      string            `json:"id"`

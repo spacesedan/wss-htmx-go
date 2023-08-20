@@ -59,7 +59,6 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 	var payload WsPayload
 
 	for {
-
 		err := conn.ReadJSON(&payload)
 		fmt.Println(payload)
 		if err != nil {
