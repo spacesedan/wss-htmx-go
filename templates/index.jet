@@ -21,13 +21,16 @@
 
     <div id="chat_room" class="text-3xl"></div>
     <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
+      <div class="h-24 max-h-32 overflow-y-scroll bg-red-300">
+        <p id="messages"></p>
+      </div>
       <!-- added hx-headers attribute to send a cutom header to the ws server -->
-      <form id="form" ws-send hx-headers='{"action" : "message"}'>
+      <form id="form" ws-send hx-headers='{"action" : "message", "user":"{{user}}"}'>
         <input name="message" class="border-2" />
       </form>
-      <div class="flex">
-        <p> {{ user }}, <span id="status"></span></p>
-      </div>
+    </div>
+    <div class="flex">
+      <p> {{ user }}, <span id="status"></span></p>
     </div>
 
   </div>

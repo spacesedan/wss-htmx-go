@@ -3,6 +3,9 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Hub struct {
@@ -39,7 +42,9 @@ func (h *Hub) ListenToWsChannel() {
 		case "broadcast":
 		case "alert":
 		case "message":
-			fmt.Println("Got a new message")
+			response.Action = "message"
+			response.Message = fmt.Sprintf(`<p id="messages" hx-swap-oob="beforeend"> %v, %v <br> </p`, e.Message, time.Now())
+			h.broadcastToAll(response)
 		case "list_users":
 		case "connect":
 		case "left":
@@ -60,7 +65,6 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 
 	for {
 		err := conn.ReadJSON(&payload)
-		fmt.Println(payload)
 		if err != nil {
 			// Do nothing...
 		} else {
@@ -76,7 +80,7 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 			continue
 		}
 
-		err := client.WriteJSON(response)
+		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
 		if err != nil {
 			log.Printf("Websocket error on %s: %s", response.Action, err)
 			_ = client.Close()
