@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -42,8 +41,9 @@ func (h *Hub) ListenToWsChannel() {
 		case "broadcast":
 		case "alert":
 		case "message":
+			fmt.Println(e.Headers)
 			response.Action = "message"
-			response.Message = fmt.Sprintf(`<p id="messages" hx-swap-oob="beforeend"> %v, %v <br> </p`, e.Message, time.Now())
+			response.Message = fmt.Sprintf(`<div id="messages" hx-swap-oob="beforeend" hx-swap="scroll:bottom"><p id="message"><strong>%v says:</stong> %v</p></div>`, e.Headers["user"], e.Message)
 			h.broadcastToAll(response)
 		case "list_users":
 		case "connect":
@@ -65,7 +65,7 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 
 	for {
 		err := conn.ReadJSON(&payload)
-		if err != nil {
+		if err != nil || payload.Message == "" {
 			// Do nothing...
 		} else {
 			payload.Conn = *conn

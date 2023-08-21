@@ -84,6 +84,9 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 
 	r.Use(middleware.RedirectSlashes)
 
+	fs := http.FileServer(http.Dir("static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+
 	handlers.NewWssHandler().Register(r)
 	handlers.NewViewHandler().Register(r)
 	handlers.NewRestHandler().Register(r)

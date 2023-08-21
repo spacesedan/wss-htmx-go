@@ -19,14 +19,16 @@
 <body>
   <div class="container p-12">
 
+    <p id="wsStatus"></p>
     <div id="chat_room" class="text-3xl"></div>
     <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-      <div class="h-24 max-h-32 overflow-y-scroll bg-red-300">
-        <p id="messages"></p>
+      <div class="max-h-24 h-24 overflow-y-scroll bg-red-300">
+        <div id="messages">
+        </div>
       </div>
       <!-- added hx-headers attribute to send a cutom header to the ws server -->
       <form id="form" ws-send hx-headers='{"action" : "message", "user":"{{user}}"}'>
-        <input name="message" class="border-2" />
+        <input name="message" id="messageBox" class="border-2" />
       </form>
     </div>
     <div class="flex">
@@ -35,6 +37,7 @@
 
   </div>
 
+  <script type="text/javascript" src="/static/index.js"></script>
 </body>
 
 </html>
