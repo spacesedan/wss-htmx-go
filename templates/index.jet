@@ -20,10 +20,10 @@
   <div class="container p-12">
 
     <p id="wsStatus"></p>
-    <div id="chat_room" class="text-3xl"></div>
     <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-      <div class="max-h-24 h-24 overflow-y-scroll bg-red-300">
-        <div id="messages">
+      <div ws-send hx-trigger="load" hx-headers='{"action": "add_user", "user": "{{user}}"}'></div>
+      <div class="max-h-24 h-24 bg-red-300">
+        <div id="messages" class="bg-blue-200 overflow-y-scroll h-full flex flex-col justify-end">
         </div>
       </div>
       <!-- added hx-headers attribute to send a cutom header to the ws server -->
@@ -37,7 +37,7 @@
 
   </div>
 
-  <script type="text/javascript" src="/static/index.js"></script>
+  <script type="text/javascript" src="/static/app.js"></script>
 </body>
 
 </html>

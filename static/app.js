@@ -7,19 +7,12 @@ document.body.addEventListener("htmx:wsConnecting", function(_) {
   wsStatus.innerHTML = "Connecting...";
 });
 
-document.body.addEventListener("htmx:wsOpen", function(evt) {
-  evt.detail.socketWrapper.send();
+document.body.addEventListener("htmx:wsOpen", function(e) {
   wsStatus.innerHTML = "Connected";
+  e.detail.socketWrapper.send("Hello");
 });
 
-document.body.addEventListener("htmx:wsBeforeSend", function(_) {
-  if (messageBox.value == "") {
-    console.log("sending empty");
-    return;
-  }
-});
-
-document.body.addEventListener("htmx:wsAfterMessage", function(_) {
+document.body.addEventListener("htmx:wsAfterMessage", function() {
   messages.scrollIntoView({
     block: "end",
     behavior: "smooth",
@@ -29,5 +22,4 @@ document.body.addEventListener("htmx:wsAfterMessage", function(_) {
 
 document.body.addEventListener("htmx:wsAfterSend", function(_) {
   messageBox.value = "";
-  console.log(messages.scrollHeight);
 });

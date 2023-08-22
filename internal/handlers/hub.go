@@ -48,7 +48,8 @@ func (h *Hub) ListenToWsChannel() {
 		case "list_users":
 		case "connect":
 		case "left":
-		case "username":
+		case "add_user":
+			fmt.Println("adding a new user")
 			response.Action = "list_users"
 		}
 	}
@@ -65,7 +66,7 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 
 	for {
 		err := conn.ReadJSON(&payload)
-		if err != nil || payload.Message == "" {
+		if err != nil || payload.Headers["action"] == "message" && payload.Message == "" {
 			// Do nothing...
 		} else {
 			payload.Conn = *conn
@@ -86,5 +87,13 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 			_ = client.Close()
 			delete(h.clients, client)
 		}
+		// sends the response in JSON requires a more hacky solution when working
+		// with htmx
+		// err = client.WriteJSON(response)
+		// if err != nil {
+		// 	log.Printf("Websocket error on %s: %s", response.Action, err)
+		// 	_ = client.Close()
+		// 	delete(h.clients, client)
+		// }
 	}
 }
