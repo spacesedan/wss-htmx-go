@@ -4,6 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <script type="text/javascript" src="/static/htmx.js"> -->
+
+  <!-- </script> -->
   <!-- HTMX -->
   <script src="https://unpkg.com/htmx.org@1.9.4"
     integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
@@ -20,24 +23,36 @@
   <div class="container p-12">
 
     <p id="wsStatus"></p>
-    <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-      <div ws-send hx-trigger="load" hx-headers='{"action": "add_user", "user": "{{user}}"}'></div>
-      <div class="max-h-24 h-24 bg-red-300">
-        <div id="messages" class="bg-blue-200 overflow-y-scroll h-full flex flex-col justify-end">
+    <div class="grid grid-cols-5">
+      <div class="col-span-4">
+        <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
+          <div ws-send hx-trigger="load" hx-headers='{"action": "add_user", "user": "{{user}}"}'></div>
+          <div class="max-h-24 h-24 bg-red-300">
+            <div id="messages" class="bg-blue-200 p-3 overflow-y-scroll h-full flex flex-col justify-end">
+            </div>
+          </div>
+          <!-- added hx-headers attribute to send a cutom header to the ws server -->
+          <form id="form" ws-send hx-headers='{"action" : "message",
+            "user":"{{user}}"}'>
+            <input name="message" id="messageBox" class="border-2" />
+          </form>
+        </div>
+        <div class="flex">
+          <p><span id="current_user">{{ user }} </span>, <span id="status"></span></p>
         </div>
       </div>
-      <!-- added hx-headers attribute to send a cutom header to the ws server -->
-      <form id="form" ws-send hx-headers='{"action" : "message", "user":"{{user}}"}'>
-        <input name="message" id="messageBox" class="border-2" />
-      </form>
-    </div>
-    <div class="flex">
-      <p> {{ user }}, <span id="status"></span></p>
+      <div class="col-span-1 bg-orange-200 p-3">
+        <p>Users</p>
+        <ul id="users_list">
+
+        </ul>
+        <p id="leavers"></p>
+      </div>
     </div>
 
   </div>
 
-  <script type="text/javascript" src="/static/app.js"></script>
+  <script type="text/javascript" src="/static/index.js"></script>
 </body>
 
 </html>

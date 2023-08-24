@@ -23,12 +23,11 @@
         <div class="flex flex-col">
           <label for="username">enter username</label>
           <input type="text" id="username" name="username" class="border-black
-          border-2">
+          border-2" autofocus>
         </div>
         <button type="submit" class="py-0.5">Send</button>
       </form>
     </div>
-  </div>
   </div>
 
 </body>

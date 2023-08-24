@@ -35,12 +35,12 @@ type WsConnection struct {
 }
 
 type WsJsonResponse struct {
-	Action        string       `json:"action"`
-	Message       string       `json:"message"`
-	MessageType   string       `json:"message_type"`
-	SkipSender    bool         `json:"-"`
-	CurrentConn   WsConnection `json:"-"`
-	ConnectedUser []string     `json:"-"`
+	Action         string       `json:"action"`
+	Message        string       `json:"message"`
+	MessageType    string       `json:"message_type"`
+	SkipSender     bool         `json:"-"`
+	CurrentConn    WsConnection `json:"-"`
+	ConnectedUsers []string     `json:"-"`
 }
 
 // WsPayload contains the information comming from the websocket connection
