@@ -1,0 +1,12 @@
+<div class="container p-12">
+  <p>Hello {{ .username }}</p>
+  <div class="bg-green-500 h-32">
+    <form hx-post="/username" class="flex items-end gap-3 px-2">
+      <div class="flex flex-col">
+        <label for="username">enter username</label>
+        <input type="text" id="username" name="username" class="border-black border-2" autofocus />
+      </div>
+      <button type="submit" class="py-0.5">Send</button>
+    </form>
+  </div>
+</div>

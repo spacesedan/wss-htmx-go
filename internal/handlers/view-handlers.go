@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -8,18 +9,21 @@ import (
 	"github.com/kataras/blocks"
 )
 
-var views = blocks.New("./views").
-	Reload(true).
-	LayoutDir("layouts")
-
 type ViewHandler struct {
-	Views *blocks.Blocks
+	IndexView *blocks.Blocks
+	LoginView *blocks.Blocks
 }
 
 func NewViewHandler() *ViewHandler {
-	_ = views.Load()
+	indexView := blocks.New("./views/index").Reload(true)
+	_ = indexView.Load()
+
+	loginView := blocks.New("./views/login").Reload(true)
+	_ = loginView.Load()
+
 	return &ViewHandler{
-		Views: views,
+		IndexView: indexView,
+		LoginView: loginView,
 	}
 }
 
@@ -33,9 +37,11 @@ func (v *ViewHandler) Register(r *chi.Mux) {
 
 func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 	username, _ := r.Cookie("username")
-	vars := make(map[string]interface{})
-	vars["username"] = username.String()
-	err := v.renderPage(w, "index", "main", vars)
+	fmt.Println(username)
+	vars := map[string]interface{}{
+		"Username": username.Value,
+	}
+	err := renderPage(w, v.IndexView, "index", "main", vars)
 	if err != nil {
 		log.Println(err)
 		return
@@ -43,15 +49,15 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *ViewHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := v.renderPage(w, "index", "login", nil)
+	err := renderPage(w, v.LoginView, "index", "main", nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 }
 
-func (v *ViewHandler) renderPage(w http.ResponseWriter, tmplName, layoutName string, data interface{}) error {
-	err := v.Views.ExecuteTemplate(w, tmplName, layoutName, data)
+func renderPage(w http.ResponseWriter, block *blocks.Blocks, tmplName, layoutName string, data interface{}) error {
+	err := block.ExecuteTemplate(w, tmplName, layoutName, data)
 	if err != nil {
 		log.Println(err)
 		return err
