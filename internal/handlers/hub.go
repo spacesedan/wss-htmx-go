@@ -44,10 +44,10 @@ func (h *Hub) ListenToWsChannel() {
 		case "broadcast":
 		case "alert":
 		case "message":
-			fmt.Println(e.Headers)
+			fmt.Println(e)
 			response.Action = "message"
 			response.Message = fmt.Sprintf(`<div id="messages" hx-swap-oob="beforeend" hx-swap="scroll:bottom"><p id="message"><strong>%v says:</stong> %v</p></div>`, e.Headers["user"], e.Message)
-			h.broadcastToAll(response)
+			// h.broadcastToAll(response)
 		case "list_users":
 			fmt.Println("Listing users")
 		case "connect":
@@ -97,9 +97,8 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 	var payload WsPayload
 
 	for {
-		fmt.Println(payload)
 		err := conn.ReadJSON(&payload)
-		if err != nil || payload.Headers["action"] == "message" && payload.Message == "" {
+		if err != nil || payload.Message == "" {
 			// Do nothing...
 		} else {
 			payload.Conn = *conn

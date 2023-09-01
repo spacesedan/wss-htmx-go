@@ -12,6 +12,7 @@ import (
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/spacesedan/wss-htmx-go/internal/handlers"
 	"golang.org/x/exp/slog"
 )
@@ -83,6 +84,7 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RedirectSlashes)
+	r.Use(cors.AllowAll().Handler)
 
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))

@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
+	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 )

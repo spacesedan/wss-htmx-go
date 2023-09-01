@@ -4,7 +4,7 @@ WebSockets Extension
 This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md for usage instructions.
 */
 
-(function () {
+(function() {
   /** @type {import("../htmx").HtmxInternalApi} */
   var api;
 
@@ -13,7 +13,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
      * init is called once, when this extension is first registered.
      * @param {import("../htmx").HtmxInternalApi} apiRef
      */
-    init: function (apiRef) {
+    init: function(apiRef) {
       // Store reference to internal API
       api = apiRef;
 
@@ -34,7 +34,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
      * @param {string} name
      * @param {Event} evt
      */
-    onEvent: function (name, evt) {
+    onEvent: function(name, evt) {
       switch (name) {
         // Try to close the socket when elements are removed
         case "htmx:beforeCleanupElement":
@@ -51,13 +51,13 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
 
           forEach(
             queryAttributeOnThisOrChildren(parent, "ws-connect"),
-            function (child) {
+            function(child) {
               ensureWebSocket(child);
             },
           );
           forEach(
             queryAttributeOnThisOrChildren(parent, "ws-send"),
-            function (child) {
+            function(child) {
               ensureWebSocketSend(child);
             },
           );
@@ -118,11 +118,11 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
       }
     }
 
-    var socketWrapper = createWebsocketWrapper(socketElt, function () {
+    var socketWrapper = createWebsocketWrapper(socketElt, function() {
       return htmx.createWebSocket(wssSource);
     });
 
-    socketWrapper.addEventListener("message", function (event) {
+    socketWrapper.addEventListener("message", function(event) {
       if (maybeCloseWebSocketSource(socketElt)) {
         return;
       }
@@ -137,7 +137,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         return;
       }
 
-      api.withExtensions(socketElt, function (extension) {
+      api.withExtensions(socketElt, function(extension) {
         response = extension.transformResponse(response, null, socketElt);
       });
 
@@ -193,7 +193,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
       /** @type {Object<string, Function[]>} */
       events: {},
 
-      addEventListener: function (event, handler) {
+      addEventListener: function(event, handler) {
         if (this.socket) {
           this.socket.addEventListener(event, handler);
         }
@@ -205,7 +205,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         this.events[event].push(handler);
       },
 
-      sendImmediately: function (message, sendElt) {
+      sendImmediately: function(message, sendElt) {
         if (!this.socket) {
           api.triggerErrorEvent();
         }
@@ -225,7 +225,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         }
       },
 
-      send: function (message, sendElt) {
+      send: function(message, sendElt) {
         if (this.socket.readyState !== this.socket.OPEN) {
           this.messageQueue.push({ message: message, sendElt: sendElt });
         } else {
@@ -233,7 +233,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         }
       },
 
-      handleQueuedMessages: function () {
+      handleQueuedMessages: function() {
         while (this.messageQueue.length > 0) {
           var queuedItem = this.messageQueue[0];
           if (this.socket.readyState === this.socket.OPEN) {
@@ -245,7 +245,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         }
       },
 
-      init: function () {
+      init: function() {
         if (this.socket && this.socket.readyState === this.socket.OPEN) {
           // Close discarded socket
           this.socket.close();
@@ -264,7 +264,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
 
         this.socket = socket;
 
-        socket.onopen = function (e) {
+        socket.onopen = function(e) {
           wrapper.retryCount = 0;
           api.triggerEvent(socketElt, "htmx:wsOpen", {
             event: e,
@@ -273,7 +273,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
           wrapper.handleQueuedMessages();
         };
 
-        socket.onclose = function (e) {
+        socket.onclose = function(e) {
           // If socket should not be connected, stop further attempts to establish connection
           // If Abnormal Closure/Service Restart/Try Again Later, then set a timer to reconnect after a pause.
           if (
@@ -281,7 +281,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
             [1006, 1012, 1013].indexOf(e.code) >= 0
           ) {
             var delay = getWebSocketReconnectDelay(wrapper.retryCount);
-            setTimeout(function () {
+            setTimeout(function() {
               wrapper.retryCount += 1;
               wrapper.init();
             }, delay);
@@ -295,7 +295,7 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
           });
         };
 
-        socket.onerror = function (e) {
+        socket.onerror = function(e) {
           api.triggerErrorEvent(socketElt, "htmx:wsError", {
             error: e,
             socketWrapper: wrapper,
@@ -304,14 +304,14 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
         };
 
         var events = this.events;
-        Object.keys(events).forEach(function (k) {
-          events[k].forEach(function (e) {
+        Object.keys(events).forEach(function(k) {
+          events[k].forEach(function(e) {
             socket.addEventListener(k, e);
           });
         });
       },
 
-      close: function () {
+      close: function() {
         this.socket.close();
       },
     };
@@ -360,8 +360,8 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
   function processWebSocketSend(socketElt, sendElt) {
     var nodeData = api.getInternalData(sendElt);
     var triggerSpecs = api.getTriggerSpecs(sendElt);
-    triggerSpecs.forEach(function (ts) {
-      api.addTriggerHandler(sendElt, ts, nodeData, function (elt, evt) {
+    triggerSpecs.forEach(function(ts) {
+      api.addTriggerHandler(sendElt, ts, nodeData, function(elt, evt) {
         if (maybeCloseWebSocketSource(socketElt)) {
           return;
         }
@@ -485,12 +485,12 @@ This extension adds support for WebSockets to htmx.  See /www/extensions/ws.md f
     elt
       .querySelectorAll(
         "[" +
-          attributeName +
-          "], [data-" +
-          attributeName +
-          "], [data-hx-ws], [hx-ws]",
+        attributeName +
+        "], [data-" +
+        attributeName +
+        "], [data-hx-ws], [hx-ws]",
       )
-      .forEach(function (node) {
+      .forEach(function(node) {
         result.push(node);
       });
 
