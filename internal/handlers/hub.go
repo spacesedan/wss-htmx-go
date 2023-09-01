@@ -40,23 +40,23 @@ func (h *Hub) ListenToWsChannel() {
 	var response WsJsonResponse
 	for {
 		e := <-h.wsChan
-		switch e.Headers["action"] {
+		fmt.Printf("%+v", e)
+		switch e.Action {
 		case "broadcast":
+			fmt.Println("Broadcast")
 		case "alert":
 		case "message":
-			fmt.Println(e)
 			response.Action = "message"
-			response.Message = fmt.Sprintf(`<div id="messages" hx-swap-oob="beforeend" hx-swap="scroll:bottom"><p id="message"><strong>%v says:</stong> %v</p></div>`, e.Headers["user"], e.Message)
-			// h.broadcastToAll(response)
+			response.Message = fmt.Sprintf(`<div id="messages" hx-swap-oob="beforeend"><p id="message"><strong>%v says:</strong> %v</p></div>`, e.User, e.Message)
+			h.broadcastToAll(response)
 		case "list_users":
 			fmt.Println("Listing users")
 		case "connect":
 		case "left":
-			fmt.Printf("%v left", e.Headers["user"])
 			response.SkipSender = false
 			response.CurrentConn = e.Conn
 			response.Action = "left"
-			response.Message = fmt.Sprintf(`<p id="leavers" hx-swap-oob="true">%v left, bye bye.</p>`, e.Headers["user"])
+			response.Message = fmt.Sprintf(`<p id="leavers" hx-swap-oob="true">%v left, bye bye.</p>`, e.User)
 			h.broadcastToAll(response)
 
 			delete(h.clients, e.Conn)
@@ -71,8 +71,8 @@ func (h *Hub) ListenToWsChannel() {
 			response.Message = fmt.Sprintf(`<ul id="users_list" hx-swap-oob="true">%v</ul>`, strings.Join(userHtml, ""))
 			h.broadcastToAll(response)
 
-		case "add_user":
-			userList := h.addToUserList(e.Conn, e.Headers["user"])
+		case "entered":
+			userList := h.addToUserList(e.Conn, e.User)
 			response.Action = "list_users"
 			response.ConnectedUsers = userList
 			response.SkipSender = false
@@ -98,9 +98,13 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 
 	for {
 		err := conn.ReadJSON(&payload)
-		if err != nil || payload.Message == "" {
+		// fmt.Printf("%+v\n", payload)
+
+		if err != nil {
 			// Do nothing...
+			fmt.Print(err)
 		} else {
+			fmt.Printf("%v\n", payload)
 			payload.Conn = *conn
 			h.wsChan <- payload
 		}
@@ -110,6 +114,7 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 func (h *Hub) addToUserList(conn WsConnection, u string) []string {
 	var userNames []string
 	h.clients[conn] = u
+	fmt.Printf("This: %v\n", h.clients[conn])
 	for _, value := range h.clients {
 		if value != "" {
 			if slices.Contains(userNames, value) {
@@ -142,19 +147,12 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 			continue
 		}
 
+		fmt.Println(response.Message)
 		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
 		if err != nil {
 			log.Printf("Websocket error on %s: %s", response.Action, err)
 			_ = client.Close()
 			delete(h.clients, client)
 		}
-		// sends the response in JSON requires a more hacky solution when working
-		// with htmx
-		// err = client.WriteJSON(response)
-		// if err != nil {
-		// 	log.Printf("Websocket error on %s: %s", response.Action, err)
-		// 	_ = client.Close()
-		// 	delete(h.clients, client)
-		// }
 	}
 }

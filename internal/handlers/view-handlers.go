@@ -13,6 +13,8 @@ type ViewHandler struct {
 	Views *blocks.Blocks
 }
 
+const HTML_HEADER = "text/html; charset=utf-8"
+
 func NewViewHandler() *ViewHandler {
 	views := blocks.New("./views").Reload(true)
 	_ = views.Load()
@@ -31,8 +33,12 @@ func (v *ViewHandler) Register(r *chi.Mux) {
 }
 
 func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", HTML_HEADER)
+
+	// get the username from cookie value
 	username, _ := r.Cookie("username")
 	fmt.Println(username)
+
 	vars := map[string]interface{}{
 		"Username": username.Value,
 	}
@@ -44,6 +50,8 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *ViewHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", HTML_HEADER)
+
 	err := v.renderPage(w, "login", "main", nil)
 	if err != nil {
 		log.Println(err)

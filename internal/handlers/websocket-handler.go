@@ -49,6 +49,7 @@ type WsPayload struct {
 	Headers map[string]string `json:"HEADERS"`
 	Action  string            `json:"action"`
 	ID      string            `json:"id"`
+	User    string            `json:"user"`
 	Message string            `json:"message"`
 	Conn    WsConnection      `json:"-"`
 }
