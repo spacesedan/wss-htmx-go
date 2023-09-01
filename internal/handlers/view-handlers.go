@@ -4,20 +4,20 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/CloudyKit/jet/v6"
 	chi "github.com/go-chi/chi/v5"
+	"github.com/kataras/blocks"
 )
 
-var views = jet.NewSet(
-	jet.NewOSFileSystemLoader("./templates"),
-	jet.InDevelopmentMode(),
-)
+var views = blocks.New("./views").
+	Reload(true).
+	LayoutDir("layouts")
 
 type ViewHandler struct {
-	Views *jet.Set
+	Views *blocks.Blocks
 }
 
 func NewViewHandler() *ViewHandler {
+	_ = views.Load()
 	return &ViewHandler{
 		Views: views,
 	}
@@ -33,9 +33,9 @@ func (v *ViewHandler) Register(r *chi.Mux) {
 
 func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 	username, _ := r.Cookie("username")
-	vars := make(jet.VarMap)
-	vars.Set("user", username.Value)
-	err := v.renderPage(w, "index.jet", vars)
+	vars := make(map[string]interface{})
+	vars["username"] = username.String()
+	err := v.renderPage(w, "index", "main", vars)
 	if err != nil {
 		log.Println(err)
 		return
@@ -43,24 +43,19 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *ViewHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := v.renderPage(w, "login.jet", nil)
+	err := v.renderPage(w, "index", "login", nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 }
 
-func (v *ViewHandler) renderPage(w http.ResponseWriter, tmpl string, data jet.VarMap) error {
-	view, err := v.Views.GetTemplate(tmpl)
+func (v *ViewHandler) renderPage(w http.ResponseWriter, tmplName, layoutName string, data interface{}) error {
+	err := v.Views.ExecuteTemplate(w, tmplName, layoutName, data)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = view.Execute(w, data, nil)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
 	return nil
 }
