@@ -1,8 +1,0 @@
-<div class="container p-12" hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-  <p>Hello, <span id="username">{{ .Username }}</span></p>
-  <form id="messageForm" ws-send type="submit">
-    <input name="message" id="messageBox" class="border-2" />
-  </form>
-</div>
-
-<script type="text/javascript" src="/static/index.js"></script>

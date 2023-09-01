@@ -10,20 +10,15 @@ import (
 )
 
 type ViewHandler struct {
-	IndexView *blocks.Blocks
-	LoginView *blocks.Blocks
+	Views *blocks.Blocks
 }
 
 func NewViewHandler() *ViewHandler {
-	indexView := blocks.New("./views/index").Reload(true)
-	_ = indexView.Load()
-
-	loginView := blocks.New("./views/login").Reload(true)
-	_ = loginView.Load()
+	views := blocks.New("./views").Reload(true)
+	_ = views.Load()
 
 	return &ViewHandler{
-		IndexView: indexView,
-		LoginView: loginView,
+		Views: views,
 	}
 }
 
@@ -41,7 +36,7 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 	vars := map[string]interface{}{
 		"Username": username.Value,
 	}
-	err := renderPage(w, v.IndexView, "index", "main", vars)
+	err := v.renderPage(w, "index", "main", vars)
 	if err != nil {
 		log.Println(err)
 		return
@@ -49,15 +44,15 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *ViewHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := renderPage(w, v.LoginView, "index", "main", nil)
+	err := v.renderPage(w, "login", "main", nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 }
 
-func renderPage(w http.ResponseWriter, block *blocks.Blocks, tmplName, layoutName string, data interface{}) error {
-	err := block.ExecuteTemplate(w, tmplName, layoutName, data)
+func (v *ViewHandler) renderPage(w http.ResponseWriter, tmplName, layoutName string, data interface{}) error {
+	err := v.Views.ExecuteTemplate(w, tmplName, layoutName, data)
 	if err != nil {
 		log.Println(err)
 		return err
