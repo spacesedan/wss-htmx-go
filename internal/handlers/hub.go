@@ -40,26 +40,21 @@ func (h *Hub) ListenToWsChannel() {
 	var response WsJsonResponse
 	for {
 		e := <-h.wsChan
-		fmt.Printf("%+v", e)
+		fmt.Printf("%+v\n", e)
 		switch e.Action {
-		case "broadcast":
-			fmt.Println("Broadcast")
-		case "alert":
 		case "message":
-			response.Action = "message"
-			response.Message = fmt.Sprintf(`<div id="messages" hx-swap-oob="beforeend"><p id="message"><strong>%v says:</strong> %v</p></div>`, e.User, e.Message)
+			h.handleChatMessage(e, response)
 			h.broadcastToAll(response)
-		case "list_users":
-			fmt.Println("Listing users")
 		case "connect":
 		case "left":
 			response.SkipSender = false
 			response.CurrentConn = e.Conn
 			response.Action = "left"
-			response.Message = fmt.Sprintf(`<p id="leavers" hx-swap-oob="true">%v left, bye bye.</p>`, e.User)
 			h.broadcastToAll(response)
 
+			fmt.Println("Before delete", h.clients)
 			delete(h.clients, e.Conn)
+			fmt.Println("After delete", h.clients)
 			userList := h.getUserNameList()
 			response.Action = "list_users"
 			response.ConnectedUsers = userList
@@ -68,7 +63,7 @@ func (h *Hub) ListenToWsChannel() {
 			for _, value := range response.ConnectedUsers {
 				userHtml = append(userHtml, fmt.Sprintf(`<li>%v</li>`, value))
 			}
-			response.Message = fmt.Sprintf(`<ul id="users_list" hx-swap-oob="true">%v</ul>`, strings.Join(userHtml, ""))
+			response.Message = fmt.Sprintf(`<ul id="chat_connected_users" hx-swap="innerHTML">%v</ul>`, strings.Join(userHtml, ""))
 			h.broadcastToAll(response)
 
 		case "entered":
@@ -80,7 +75,7 @@ func (h *Hub) ListenToWsChannel() {
 			for _, value := range response.ConnectedUsers {
 				userHtml = append(userHtml, fmt.Sprintf(`<li>%v</li>`, value))
 			}
-			response.Message = fmt.Sprintf(`<ul id="users_list" hx-swap-oob="true">%v</ul>`, strings.Join(userHtml, ""))
+			response.Message = fmt.Sprintf(`<ul id="chat_connected_users" hx-swap="innerHTML">%v</ul>`, strings.Join(userHtml, ""))
 
 			h.broadcastToAll(response)
 		}
@@ -100,11 +95,9 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 		err := conn.ReadJSON(&payload)
 		// fmt.Printf("%+v\n", payload)
 
-		if err != nil {
+		if err != nil || payload.Message == "" {
 			// Do nothing...
-			fmt.Print(err)
 		} else {
-			fmt.Printf("%v\n", payload)
 			payload.Conn = *conn
 			h.wsChan <- payload
 		}
@@ -114,7 +107,6 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 func (h *Hub) addToUserList(conn WsConnection, u string) []string {
 	var userNames []string
 	h.clients[conn] = u
-	fmt.Printf("This: %v\n", h.clients[conn])
 	for _, value := range h.clients {
 		if value != "" {
 			if slices.Contains(userNames, value) {
@@ -147,7 +139,6 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 			continue
 		}
 
-		fmt.Println(response.Message)
 		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
 		if err != nil {
 			log.Printf("Websocket error on %s: %s", response.Action, err)
@@ -155,4 +146,12 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 			delete(h.clients, client)
 		}
 	}
+}
+
+// handleChatMessage takes in the payload from the client and updates the
+// response to be returned back to the client. It returns an HTML element that
+// gets pushed onto the chat messages box.
+func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
+	response.Action = "message"
+	response.Message = fmt.Sprintf(`<div id="chat_messages" hx-swap-oob="beforeend"><p id="message"><strong>%v:</strong> %v</p></div>`, payload.User, payload.Message)
 }
