@@ -39,6 +39,7 @@ type WsJsonResponse struct {
 	Message        string       `json:"message"`
 	MessageType    string       `json:"message_type"`
 	SkipSender     bool         `json:"-"`
+	IsSender       bool         `json:""`
 	CurrentConn    WsConnection `json:"-"`
 	ConnectedUsers []string     `json:"-"`
 }

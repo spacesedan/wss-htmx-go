@@ -40,12 +40,9 @@ func (h *Hub) ListenToWsChannel() {
 	var response WsJsonResponse
 	for {
 		e := <-h.wsChan
-		fmt.Printf("%+v\n", e)
 		switch e.Action {
 		case "message":
 			h.handleChatMessage(e, response)
-			h.broadcastToAll(response)
-		case "connect":
 		case "left":
 			response.SkipSender = false
 			response.CurrentConn = e.Conn
@@ -95,7 +92,7 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 		err := conn.ReadJSON(&payload)
 		// fmt.Printf("%+v\n", payload)
 
-		if err != nil || payload.Message == "" {
+		if err != nil {
 			// Do nothing...
 		} else {
 			payload.Conn = *conn
@@ -148,10 +145,36 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 	}
 }
 
-// handleChatMessage takes in the payload from the client and updates the
-// response to be returned back to the client. It returns an HTML element that
-// gets pushed onto the chat messages box.
 func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 	response.Action = "message"
-	response.Message = fmt.Sprintf(`<div id="chat_messages" hx-swap-oob="beforeend"><p id="message"><strong>%v:</strong> %v</p></div>`, payload.User, payload.Message)
+	response.CurrentConn = payload.Conn
+
+	for client := range h.clients {
+		if response.CurrentConn == client {
+			response.Message = fmt.Sprintf(`
+          <div id="chat_messages" hx-swap-oob="beforeend">
+            <div id="message" class="flex gap-3 justify-end items-start p-3">
+              <p class="bg-green-400 px-3 py-2 rounded-md">%v</p>
+              <img src="https://ui-avatars.com/api/?name=%v&size=32&rounded=true" alt="profile image for user: %v"></img>
+            </div>
+          </div>
+      `, payload.Message, payload.User, payload.User)
+		} else {
+			response.Message = fmt.Sprintf(`
+          <div id="chat_messages" hx-swap-oob="beforeend">
+            <div id="message" class="flex gap-3 justify-start items-start p-3">
+              <img src="https://ui-avatars.com/api/?name=%v&size=32&rounded=true" alt="profile image for user: %v"></img>
+              <p class="bg-gray-400 px-3 py-2 rounded-md">%v</p>
+            </div>
+          </div>
+      `, payload.User, payload.User, payload.Message)
+		}
+
+		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
+		if err != nil {
+			log.Printf("Websocker err on %s: %s", response.Action, err)
+			_ = client.Close()
+			delete(h.clients, client)
+		}
+	}
 }

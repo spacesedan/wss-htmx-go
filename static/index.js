@@ -31,6 +31,7 @@ document.body.addEventListener("htmx:wsClose", function(e) {
   setTimeout(() => {
     console.log(leftChatMessage);
     leftChatMessage.innerHTML = "";
+    htmx.process(leftChatMessage);
   }, 3000);
 });
 
