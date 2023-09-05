@@ -28,11 +28,6 @@ document.body.addEventListener("htmx:wsClose", function(e) {
     id: `${uniqueID()}`,
   };
   e.detail.socketWrapper.send(JSON.stringify(msg), e.detail.elt);
-  setTimeout(() => {
-    console.log(leftChatMessage);
-    leftChatMessage.innerHTML = "";
-    htmx.process(leftChatMessage);
-  }, 3000);
 });
 
 document.body.addEventListener("htmx:wsConfigSend", function(e) {

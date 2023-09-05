@@ -18,6 +18,7 @@ import (
 )
 
 func main() {
+
 	errC, err := run()
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
