@@ -5,12 +5,12 @@
   </p>
   <div id="chat_container" class="grid grid-cols-5 grid-rows-[1fr,_100px]">
     <!-- Chat messages displayed here -->
-    <div id="chat_messages_container" class="col-span-4 bg-blue-400 max-h-32 h-32 overflow-y-scroll">
+    <div id="chat_messages_container" class="col-span-4  bg-blue-400  max-h-[60vh] h-[60vh] rounded-tl-md overflow-y-scroll">
       <div id="chat_messages"></div>
     </div>
 
     <!-- Connected users displayed here -->
-    <div id="chat_current_users" class="col-span-1 bg-orange-200">
+    <div id="chat_current_users" class="col-span-1 bg-orange-200 rounded-tr-md">
       Connected Users go here
       <ul id="chat_connected_users"></ul>
 
@@ -18,7 +18,7 @@
     </div>
 
     <!-- New message form -->
-    <div id="chat_message_box" class="row-start-2 col-span-full h-24 bg-green-400">
+    <div id="chat_message_box" class="row-start-2 col-span-full h-24 bg-green-400 rounded-b-md">
       <form id="chat_message_form" ws-send>
         <input id="chat_message_input" class="border-2" />
       </form>

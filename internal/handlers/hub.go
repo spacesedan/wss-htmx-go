@@ -149,6 +149,11 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 	response.Action = "message"
 	response.CurrentConn = payload.Conn
 
+	// prevents empty messages from being sent to connected clients
+	if payload.Message == "" {
+		return
+	}
+
 	for client := range h.clients {
 		if response.CurrentConn == client {
 			response.Message = fmt.Sprintf(`
