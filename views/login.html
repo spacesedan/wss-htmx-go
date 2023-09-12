@@ -1,17 +1,16 @@
-<div class="container p-12">
-  <div class="bg-green-500 h-32">
-    <form hx-post="/username" class="flex items-end gap-3 px-2">
-      <div class="flex flex-col">
-        <label for="username">enter username</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          class="border-black border-2"
-          autofocus
-        />
-      </div>
-      <button type="submit" class="py-0.5">Send</button>
-    </form>
+<div class="container h-screen p-12">
+  <div class="flex h-full justify-center items-center">
+    <div class="bg-green-300 rounded-md h-32 border-2 border-black p-3">
+      <form hx-post="/username" class="flex flex-col items-center gap-3 px-2">
+        <div class="flex flex-col font-mono">
+          <label for="username">enter username</label>
+          <input type="text" id="username" name="username" class="px-2 border-black border-[1px] rounded-md py-1"
+            autofocus />
+        </div>
+        <button type="submit" class="py-1 px-2 rounded-md bg-green-500 font-black">
+          Join Chat
+        </button>
+      </form>
+    </div>
   </div>
 </div>
