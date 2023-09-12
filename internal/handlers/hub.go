@@ -49,9 +49,7 @@ func (h *Hub) ListenToWsChannel() {
 			response.Action = "left"
 			h.broadcastToAll(response)
 
-			fmt.Println("Before delete", h.clients)
 			delete(h.clients, e.Conn)
-			fmt.Println("After delete", h.clients)
 			userList := h.getUserNameList()
 			response.Action = "list_users"
 			response.ConnectedUsers = userList
@@ -90,7 +88,6 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 
 	for {
 		err := conn.ReadJSON(&payload)
-		// fmt.Printf("%+v\n", payload)
 
 		if err != nil {
 			// Do nothing...

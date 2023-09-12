@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -37,7 +36,6 @@ func (v *ViewHandler) Index(w http.ResponseWriter, r *http.Request) {
 
 	// get the username from cookie value
 	username, _ := r.Cookie("username")
-	fmt.Println(username)
 
 	vars := map[string]interface{}{
 		"Username": username.Value,

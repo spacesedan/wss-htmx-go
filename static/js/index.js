@@ -9,7 +9,6 @@ function uniqueID() {
 }
 
 document.body.addEventListener("htmx:wsOpen", function (e) {
-  console.log(username.dataset.username);
   const msg = {
     action: "entered",
     message: `${username.dataset.username} has entered the chat`,
@@ -20,7 +19,6 @@ document.body.addEventListener("htmx:wsOpen", function (e) {
 });
 
 document.body.addEventListener("htmx:wsClose", function (e) {
-  console.log(e);
   const msg = {
     action: "left",
     message: `${username.dataset.username} has left the chat`,
@@ -33,7 +31,6 @@ document.body.addEventListener("htmx:wsClose", function (e) {
 document.body.addEventListener("htmx:wsConfigSend", function (e) {
   switch (e.detail.headers["HX-Trigger"]) {
     case "chat_message_form":
-      console.log(e);
       e.detail.parameters = {
         message: messageInput.value,
         action: "message",
