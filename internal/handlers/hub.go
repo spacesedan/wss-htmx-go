@@ -58,7 +58,7 @@ func (h *Hub) ListenToWsChannel() {
 			response.SkipSender = false
 			var userHtml []string
 			for _, value := range response.ConnectedUsers {
-				userHtml = append(userHtml, fmt.Sprintf(`<li>%v</li>`, value))
+				userHtml = append(userHtml, fmt.Sprintf(`<li class="font-bold">%v</li>`, value))
 			}
 			response.Message = fmt.Sprintf(`<ul id="chat_connected_users" hx-swap="innerHTML">%v</ul>`, strings.Join(userHtml, ""))
 			h.broadcastToAll(response)
@@ -70,7 +70,7 @@ func (h *Hub) ListenToWsChannel() {
 			response.SkipSender = false
 			var userHtml []string
 			for _, value := range response.ConnectedUsers {
-				userHtml = append(userHtml, fmt.Sprintf(`<li>%v</li>`, value))
+				userHtml = append(userHtml, fmt.Sprintf(`<li class="font-bold">%v</li>`, value))
 			}
 			response.Message = fmt.Sprintf(`<ul id="chat_connected_users" hx-swap="innerHTML">%v</ul>`, strings.Join(userHtml, ""))
 
@@ -158,7 +158,7 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 		if response.CurrentConn == client {
 			response.Message = fmt.Sprintf(`
           <div id="chat_messages" hx-swap-oob="beforeend">
-            <div id="message" class="flex gap-3 justify-end items-start p-3">
+            <div id="message" class="flex gap-3 justify-end items-start p-3 font-mono">
               <p class="bg-green-400 px-3 py-2 rounded-md">%v</p>
               <img src="https://ui-avatars.com/api/?name=%v&size=32&rounded=true" alt="profile image for user: %v"></img>
             </div>
@@ -167,9 +167,9 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 		} else {
 			response.Message = fmt.Sprintf(`
           <div id="chat_messages" hx-swap-oob="beforeend">
-            <div id="message" class="flex gap-3 justify-start items-start p-3">
+            <div id="message" class="flex gap-3 justify-start items-start p-3 font-mono">
               <img src="https://ui-avatars.com/api/?name=%v&size=32&rounded=true" alt="profile image for user: %v"></img>
-              <p class="bg-gray-400 px-3 py-2 rounded-md">%v</p>
+              <p class="bg-indigo-400 px-3 py-2 rounded-md">%v</p>
             </div>
           </div>
       `, payload.User, payload.User, payload.Message)

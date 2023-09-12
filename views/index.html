@@ -1,29 +1,39 @@
 <div class="container p-12" hx-ext="ws" ws-connect="ws://localhost:8080/ws">
-  <p>
+  <h1 class="text-xl font-black font-mono">
     Hello,
     <span id="username" data-username="{{ .Username }}">{{ .Username }}</span>
-  </p>
-  <div id="chat_container" class="grid grid-cols-5 grid-rows-[1fr,_100px]">
+  </h1>
+  <div id="chat_container" class="grid grid-cols-5 grid-rows-[1fr,_100px] border-2 border-black rounded-md">
     <!-- Chat messages displayed here -->
-    <div id="chat_messages_container" class="col-span-4  bg-blue-400  max-h-[60vh] h-[60vh] rounded-tl-md overflow-y-scroll">
+    <div id="chat_messages_container"
+      class="col-span-4 bg-blue-200 max-h-[60vh] h-[60vh] no-scrollbar overflow-y-scroll border-r-[1px] border-black">
       <div id="chat_messages"></div>
     </div>
 
     <!-- Connected users displayed here -->
-    <div id="chat_current_users" class="col-span-1 bg-orange-200 rounded-tr-md">
-      Connected Users go here
-      <ul id="chat_connected_users"></ul>
+    <div id="chat_current_users" class="col-span-1 bg-orange-200 border-l-[1px] border-black">
+      <div id="chat_users_containers" class="p-3">
+        <h2 class="text-xl font-black font-mono">Online:</h2>
+        <ul id="chat_connected_users" class="font-black"></ul>
 
-      <p id="leavers"></p>
+        <p id="leavers"></p>
+      </div>
     </div>
 
     <!-- New message form -->
-    <div id="chat_message_box" class="row-start-2 col-span-full h-24 bg-green-400 rounded-b-md">
-      <form id="chat_message_form" ws-send>
-        <input id="chat_message_input" class="border-2" />
-      </form>
+    <div id="chat_message_box" class="row-start-2 col-span-full bg-pink-300 border-t-2 border-black">
+      <div id="chat_message_form_container" class="p-3 font-mono">
+        <form id="chat_message_form" class="rounded-md flex h-full justify-center gap-3" ws-send>
+          <div id="chat_message_form_group" class="w-3/5">
+            <input id="chat_message_input" class="border-2 w-full rounded-md px-3 py-1" />
+          </div>
+          <button type="submit" class="bg-pink-400 font-bold px-2 rounded-md">
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 
-<script type="text/javascript" src="/static/index.js"></script>
+<script type="text/javascript" src="/static/js/index.js"></script>
