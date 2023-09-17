@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+    "log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,13 +13,10 @@ import (
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/spacesedan/wss-htmx-go/internal/handlers"
-	"golang.org/x/exp/slog"
 )
 
 func main() {
-
 	errC, err := run()
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
@@ -85,12 +83,11 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RedirectSlashes)
-	r.Use(cors.AllowAll().Handler)
 
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	handlers.NewWssHandler().Register(r)
+	handlers.NewWssHandler(conf.logger).Register(r)
 	handlers.NewViewHandler().Register(r)
 	handlers.NewRestHandler().Register(r)
 

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"sort"
 	"strings"
 
@@ -11,28 +11,16 @@ import (
 )
 
 type Hub struct {
-	clients        map[WsConnection]string
-	wsChan         chan WsPayload
-	connectionChan chan WsPayload
-	broadcastChan  chan WsPayload
-	alertChan      chan WsPayload
-	whoIsThereChan chan WsPayload
-	enterChan      chan WsPayload
-	leaveChan      chan WsPayload
-	userName       chan WsPayload
+	logger  *slog.Logger
+	clients map[WsConnection]string
+	wsChan  chan WsPayload
 }
 
-func newHub() *Hub {
+func newHub(logger *slog.Logger) *Hub {
 	return &Hub{
-		clients:        make(map[WsConnection]string),
-		wsChan:         make(chan WsPayload),
-		connectionChan: make(chan WsPayload),
-		broadcastChan:  make(chan WsPayload),
-		alertChan:      make(chan WsPayload),
-		whoIsThereChan: make(chan WsPayload),
-		enterChan:      make(chan WsPayload),
-		leaveChan:      make(chan WsPayload),
-		userName:       make(chan WsPayload),
+		clients: make(map[WsConnection]string),
+		wsChan:  make(chan WsPayload),
+		logger:  logger,
 	}
 }
 
@@ -42,8 +30,10 @@ func (h *Hub) ListenToWsChannel() {
 		e := <-h.wsChan
 		switch e.Action {
 		case "message":
+			h.logger.Info("Message recieved", slog.String("message_id", e.ID))
 			h.handleChatMessage(e, response)
 		case "left":
+
 			response.SkipSender = false
 			response.CurrentConn = e.Conn
 			response.Action = "left"
@@ -80,7 +70,7 @@ func (h *Hub) ListenToWsChannel() {
 func (h *Hub) ListenForWS(conn *WsConnection) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Error", fmt.Sprintf("%v", r))
+			h.logger.Error("Error: Attempting to recover", slog.Any("err", r))
 		}
 	}()
 
@@ -135,7 +125,7 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 
 		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
 		if err != nil {
-			log.Printf("Websocket error on %s: %s", response.Action, err)
+			h.logger.Error("Error writing message", slog.String("action", response.Action), slog.String("err", err.Error()))
 			_ = client.Close()
 			delete(h.clients, client)
 		}
@@ -174,7 +164,7 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 
 		err := client.WriteMessage(websocket.TextMessage, []byte(response.Message))
 		if err != nil {
-			log.Printf("Websocker err on %s: %s", response.Action, err)
+			h.logger.Error("Error writing message", slog.String("action", response.Action), slog.String("err", err.Error()))
 			_ = client.Close()
 			delete(h.clients, client)
 		}

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	chi "github.com/go-chi/chi/v5"
@@ -16,13 +16,15 @@ var upgrader = websocket.Upgrader{
 
 type WssHandler struct {
 	hub *Hub
+    logger *slog.Logger
 }
 
-func NewWssHandler() *WssHandler {
-	hub := newHub()
+func NewWssHandler(logger *slog.Logger) *WssHandler {
+	hub := newHub(logger)
 	go hub.ListenToWsChannel()
 	return &WssHandler{
 		hub: hub,
+        logger: logger,
 	}
 }
 
@@ -56,10 +58,12 @@ type WsPayload struct {
 }
 
 func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
-	log.Println("Connected to socket")
+
+    h.logger.Info("Connected to socket")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print(err)
+        h.logger.Error("Something went wrong when upgrading connection",
+        slog.String("err", err.Error()))
 		return
 	}
 
@@ -69,7 +73,8 @@ func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	// err = ws.WriteJSON(response)
 	err = ws.WriteMessage(websocket.TextMessage, []byte(response.Message))
 	if err != nil {
-		log.Println(err)
+        h.logger.Error("Something when trying to send a message to the client",
+        slog.String("err", err.Error()))
 	}
 
 	conn := WsConnection{Conn: ws}
