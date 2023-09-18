@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -13,8 +14,10 @@ import (
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/spacesedan/wss-htmx-go/cmd/internal"
 	"github.com/spacesedan/wss-htmx-go/internal/handlers"
 	"github.com/spacesedan/wss-htmx-go/internal/hub"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -31,8 +34,18 @@ func main() {
 func run() (<-chan error, error) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
+	conf, err := internal.NewViper(logger)
+	if err != nil {
+		logger.Error("Reading Config Failed", slog.String("err", err.Error()))
+		panic(err)
+	}
+
+	fmt.Println(conf.AllKeys())
+
+
 	srv, err := newServer(ServerConfig{
 		logger: logger,
+		conf: conf,
 	})
 	if err != nil {
 		return nil, err
@@ -48,6 +61,7 @@ func run() (<-chan error, error) {
 		<-ctx.Done()
 
 		logger.Info("Shutdown signal recieved")
+
 
 		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
@@ -67,7 +81,7 @@ func run() (<-chan error, error) {
 	}()
 
 	go func() {
-		logger.Info("Listening and serving", slog.String("address", "localhost:8080"))
+		logger.Info("Listening and serving", slog.String("address", conf.GetString("address")))
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err
 		}
@@ -78,18 +92,20 @@ func run() (<-chan error, error) {
 
 type ServerConfig struct {
 	logger *slog.Logger
+	conf   *viper.Viper
 }
 
 func newServer(conf ServerConfig) (*http.Server, error) {
 	r := chi.NewRouter()
 
+	// Middlewares
 	r.Use(middleware.RedirectSlashes)
 
 	// Handle static files
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-// Services
+	// Services
 	hub := hub.NewHub(conf.logger)
 
 	// Handler registration
@@ -99,6 +115,6 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 
 	return &http.Server{
 		Handler: r,
-		Addr:    ":8080",
+		Addr:    conf.conf.GetString("address"),
 	}, nil
 }
