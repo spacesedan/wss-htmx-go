@@ -1,4 +1,4 @@
-package handlers
+package hub
 
 import (
 	"fmt"
@@ -10,16 +10,41 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type Hub struct {
-	logger  *slog.Logger
-	clients map[WsConnection]string
-	wsChan  chan WsPayload
+type WsConnection struct {
+	*websocket.Conn
 }
 
-func newHub(logger *slog.Logger) *Hub {
+type WsJsonResponse struct {
+	Action         string       `json:"action"`
+	Message        string       `json:"message"`
+	MessageType    string       `json:"message_type"`
+	SkipSender     bool         `json:"-"`
+	IsSender       bool         `json:""`
+	CurrentConn    WsConnection `json:"-"`
+	ConnectedUsers []string     `json:"-"`
+}
+
+// WsPayload contains the information comming from the websocket connection
+type WsPayload struct {
+	// HEADERS is injected to the message by htmx
+	Headers map[string]string `json:"HEADERS"`
+	Action  string            `json:"action"`
+	ID      string            `json:"id"`
+	User    string            `json:"user"`
+	Message string            `json:"message"`
+	Conn    WsConnection      `json:"-"`
+}
+
+type Hub struct {
+	logger  *slog.Logger
+	Clients map[WsConnection]string
+	WsChan  chan WsPayload
+}
+
+func NewHub(logger *slog.Logger) *Hub {
 	return &Hub{
-		clients: make(map[WsConnection]string),
-		wsChan:  make(chan WsPayload),
+		Clients: make(map[WsConnection]string),
+		WsChan:  make(chan WsPayload),
 		logger:  logger,
 	}
 }
@@ -27,7 +52,7 @@ func newHub(logger *slog.Logger) *Hub {
 func (h *Hub) ListenToWsChannel() {
 	var response WsJsonResponse
 	for {
-		e := <-h.wsChan
+		e := <-h.WsChan
 		switch e.Action {
 		case "message":
 			h.logger.Info("Message recieved", slog.String("message_id", e.ID))
@@ -39,7 +64,7 @@ func (h *Hub) ListenToWsChannel() {
 			response.Action = "left"
 			h.broadcastToAll(response)
 
-			delete(h.clients, e.Conn)
+			delete(h.Clients, e.Conn)
 			userList := h.getUserNameList()
 			response.Action = "list_users"
 			response.ConnectedUsers = userList
@@ -83,15 +108,15 @@ func (h *Hub) ListenForWS(conn *WsConnection) {
 			// Do nothing...
 		} else {
 			payload.Conn = *conn
-			h.wsChan <- payload
+			h.WsChan <- payload
 		}
 	}
 }
 
 func (h *Hub) addToUserList(conn WsConnection, u string) []string {
 	var userNames []string
-	h.clients[conn] = u
-	for _, value := range h.clients {
+	h.Clients[conn] = u
+	for _, value := range h.Clients {
 		if value != "" {
 			if slices.Contains(userNames, value) {
 				continue
@@ -105,7 +130,7 @@ func (h *Hub) addToUserList(conn WsConnection, u string) []string {
 
 func (h *Hub) getUserNameList() []string {
 	var userNames []string
-	for _, value := range h.clients {
+	for _, value := range h.Clients {
 		if value != "" {
 			if slices.Contains(userNames, value) {
 				continue
@@ -118,7 +143,7 @@ func (h *Hub) getUserNameList() []string {
 }
 
 func (h *Hub) broadcastToAll(response WsJsonResponse) {
-	for client := range h.clients {
+	for client := range h.Clients {
 		if response.SkipSender && response.CurrentConn == client {
 			continue
 		}
@@ -127,7 +152,7 @@ func (h *Hub) broadcastToAll(response WsJsonResponse) {
 		if err != nil {
 			h.logger.Error("Error writing message", slog.String("action", response.Action), slog.String("err", err.Error()))
 			_ = client.Close()
-			delete(h.clients, client)
+			delete(h.Clients, client)
 		}
 	}
 }
@@ -141,7 +166,7 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 		return
 	}
 
-	for client := range h.clients {
+	for client := range h.Clients {
 		if response.CurrentConn == client {
 			response.Message = fmt.Sprintf(`
           <div id="chat_messages" hx-swap-oob="beforeend">
@@ -166,7 +191,7 @@ func (h *Hub) handleChatMessage(payload WsPayload, response WsJsonResponse) {
 		if err != nil {
 			h.logger.Error("Error writing message", slog.String("action", response.Action), slog.String("err", err.Error()))
 			_ = client.Close()
-			delete(h.clients, client)
+			delete(h.Clients, client)
 		}
 	}
 }

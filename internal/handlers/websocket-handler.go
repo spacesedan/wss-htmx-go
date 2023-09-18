@@ -6,6 +6,7 @@ import (
 
 	chi "github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
+	"github.com/spacesedan/wss-htmx-go/internal/hub"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,12 +16,11 @@ var upgrader = websocket.Upgrader{
 }
 
 type WssHandler struct {
-	hub *Hub
+	hub *hub.Hub
     logger *slog.Logger
 }
 
-func NewWssHandler(logger *slog.Logger) *WssHandler {
-	hub := newHub(logger)
+func NewWssHandler(hub *hub.Hub,logger *slog.Logger) *WssHandler {
 	go hub.ListenToWsChannel()
 	return &WssHandler{
 		hub: hub,
@@ -32,30 +32,6 @@ func (h *WssHandler) Register(m *chi.Mux) {
 	m.HandleFunc("/ws", h.Serve)
 }
 
-type WsConnection struct {
-	*websocket.Conn
-}
-
-type WsJsonResponse struct {
-	Action         string       `json:"action"`
-	Message        string       `json:"message"`
-	MessageType    string       `json:"message_type"`
-	SkipSender     bool         `json:"-"`
-	IsSender       bool         `json:""`
-	CurrentConn    WsConnection `json:"-"`
-	ConnectedUsers []string     `json:"-"`
-}
-
-// WsPayload contains the information comming from the websocket connection
-type WsPayload struct {
-	// HEADERS is injected to the message by htmx
-	Headers map[string]string `json:"HEADERS"`
-	Action  string            `json:"action"`
-	ID      string            `json:"id"`
-	User    string            `json:"user"`
-	Message string            `json:"message"`
-	Conn    WsConnection      `json:"-"`
-}
 
 func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
 
@@ -67,7 +43,7 @@ func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response WsJsonResponse
+	var response hub.WsJsonResponse
 	response.Action = `connected`
 	response.Message = `<p id="wsStatus">Welcome to the startup</p>`
 	// err = ws.WriteJSON(response)
@@ -77,8 +53,8 @@ func (h *WssHandler) Serve(w http.ResponseWriter, r *http.Request) {
         slog.String("err", err.Error()))
 	}
 
-	conn := WsConnection{Conn: ws}
-	h.hub.clients[conn] = ""
+	conn := hub.WsConnection{Conn: ws}
+	h.hub.Clients[conn] = ""
 
 	go h.hub.ListenForWS(&conn)
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
-    "log/slog"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,6 +14,7 @@ import (
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/spacesedan/wss-htmx-go/internal/handlers"
+	"github.com/spacesedan/wss-htmx-go/internal/hub"
 )
 
 func main() {
@@ -84,10 +85,15 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 
 	r.Use(middleware.RedirectSlashes)
 
+	// Handle static files
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	handlers.NewWssHandler(conf.logger).Register(r)
+// Services
+	hub := hub.NewHub(conf.logger)
+
+	// Handler registration
+	handlers.NewWssHandler(hub, conf.logger).Register(r)
 	handlers.NewViewHandler().Register(r)
 	handlers.NewRestHandler().Register(r)
 
