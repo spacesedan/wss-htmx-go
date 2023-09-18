@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewViper reads config file
 func NewViper(logger *slog.Logger) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetConfigName("config")

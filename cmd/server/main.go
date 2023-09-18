@@ -51,11 +51,14 @@ func run() (<-chan error, error) {
 	}
 
 	errC := make(chan error, 1)
+
 	ctx, stop := signal.NotifyContext(context.Background(),
 		os.Interrupt,
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
 	)
+
+	// shutdown logic
 	go func() {
 		<-ctx.Done()
 
@@ -63,6 +66,7 @@ func run() (<-chan error, error) {
 
 
 		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
 
 		defer func() {
 			stop()
