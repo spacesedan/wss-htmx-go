@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/spacesedan/wss-htmx-go/cmd/internal"
+	internaldomain "github.com/spacesedan/wss-htmx-go/internal"
 	"github.com/spacesedan/wss-htmx-go/internal/handlers"
 	"github.com/spacesedan/wss-htmx-go/internal/hub"
 	"github.com/spf13/viper"
@@ -34,21 +34,20 @@ func main() {
 func run() (<-chan error, error) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	conf, err := internal.NewViper(logger)
+	viper, err := internal.NewViper(logger)
 	if err != nil {
 		logger.Error("Reading Config Failed", slog.String("err", err.Error()))
-		panic(err)
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewViper")
 	}
 
-	fmt.Println(conf.AllKeys())
 
 
 	srv, err := newServer(ServerConfig{
 		logger: logger,
-		conf: conf,
+		viper: viper,
 	})
 	if err != nil {
-		return nil, err
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "newServer")
 	}
 
 	errC := make(chan error, 1)
@@ -81,7 +80,7 @@ func run() (<-chan error, error) {
 	}()
 
 	go func() {
-		logger.Info("Listening and serving", slog.String("address", conf.GetString("address")))
+		logger.Info("Listening and serving", slog.String("address", viper.GetString("address")))
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err
 		}
@@ -92,7 +91,7 @@ func run() (<-chan error, error) {
 
 type ServerConfig struct {
 	logger *slog.Logger
-	conf   *viper.Viper
+	viper   *viper.Viper
 }
 
 func newServer(conf ServerConfig) (*http.Server, error) {
@@ -115,6 +114,6 @@ func newServer(conf ServerConfig) (*http.Server, error) {
 
 	return &http.Server{
 		Handler: r,
-		Addr:    conf.conf.GetString("address"),
+		Addr:    conf.viper.GetString("address"),
 	}, nil
 }
